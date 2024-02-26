@@ -7,7 +7,7 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var _log *log
+var to *log
 
 type log struct {
 	Options
@@ -21,13 +21,13 @@ func Start(ops ...Optfunc) (err error) {
 		fn(&o)
 	}
 
-	_log = &log{
+	to = &log{
 		Logger:  logging.MustGetLogger("ht-log"),
 		Options: o,
 	}
 
-	if _log.mode == "dev" {
-		_log.close, err = _log.devLog()
+	if to.mode == "dev" {
+		to.close, err = to.devLog()
 		if err != nil {
 			return err
 		}
@@ -35,21 +35,21 @@ func Start(ops ...Optfunc) (err error) {
 		return nil
 	}
 
-	_log.close, err = _log.prodLog()
+	to.close, err = to.prodLog()
 
 	return err
 }
 
 func Stop() error {
-	if _log.close == nil {
+	if to.close == nil {
 		return nil
 	}
 
-	return _log.close()
+	return to.close()
 }
 
-func Default() *log {
-	return _log
+func Log() *logging.Logger {
+	return to.Logger
 }
 
 func (l *log) devLog() (close func() error, err error) {

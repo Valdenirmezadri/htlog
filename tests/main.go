@@ -13,7 +13,7 @@ func main() {
 	}
 	defer htl.Stop()
 
-	htl.Warning("teste 2")
-	htl.Warning("teste 3")
+	htl.Log().Info("teste 23")
+	htl.Log().Info("teste 24")
 
 }
