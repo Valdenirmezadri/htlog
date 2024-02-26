@@ -48,6 +48,10 @@ func Stop() error {
 	return _log.close()
 }
 
+func Default() *log {
+	return _log
+}
+
 func (l *log) devLog() (close func() error, err error) {
 	console := logging.NewLogBackend(os.Stderr, "", 0)
 	consoleFormatter := logging.NewBackendFormatter(console, formatConsole)
