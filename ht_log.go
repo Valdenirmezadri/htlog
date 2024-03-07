@@ -3,7 +3,7 @@ package htl
 import (
 	"os"
 
-	logging "github.com/op/go-logging"
+	logging "github.com/Valdenirmezadri/go-logging"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
