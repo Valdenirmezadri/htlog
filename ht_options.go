@@ -1,8 +1,12 @@
 package htl
 
+import "github.com/Valdenirmezadri/go-logging"
+
 type Optfunc func(*Options)
 
 type Options struct {
+	module     string
+	level      logging.Level
 	mode       string
 	pathLog    string
 	maxSize    uint
@@ -11,9 +15,19 @@ type Options struct {
 	compress   bool
 }
 
-func AsProd() Optfunc {
+func Level(l string) Optfunc {
 	return func(o *Options) {
-		o.mode = "prod"
+		o.level = o.level.New(l)
+	}
+}
+
+func AsProd(o *Options) {
+	o.mode = "prod"
+}
+
+func Module(module string) Optfunc {
+	return func(o *Options) {
+		o.module = module
 	}
 }
 
@@ -68,8 +82,10 @@ func WithCompress() Optfunc {
 
 func defaultOps() Options {
 	return Options{
+		module:     "htlog",
 		mode:       "dev",
 		pathLog:    "htlog.log",
+		level:      logging.DEBUG,
 		maxSize:    100,
 		maxBackups: 10,
 		maxAge:     365,

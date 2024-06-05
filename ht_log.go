@@ -21,8 +21,13 @@ func Start(ops ...Optfunc) (err error) {
 		fn(&o)
 	}
 
+	logger, err := logging.GetLogger(o.module)
+	if err != nil {
+		return err
+	}
+
 	to = &log{
-		Logger:  logging.MustGetLogger("ht-log"),
+		Logger:  logger,
 		Options: o,
 	}
 
@@ -55,26 +60,39 @@ func Log() *logging.Logger {
 func (l *log) devLog() (close func() error, err error) {
 	console := logging.NewLogBackend(os.Stderr, "", 0)
 	consoleFormatter := logging.NewBackendFormatter(console, formatConsole)
+	consoleBackend := logging.AddModuleLevel(consoleFormatter)
+	consoleBackend.SetLevel(l.level, l.module)
 
-	writer, close, err := l.writerToWithRotation()
+	fileBackend, close, err := l.fileBackend()
 	if err != nil {
 		return nil, err
 	}
 
-	fileFormatter := logging.NewBackendFormatter(writer, formatFile)
-	logging.SetBackend(consoleFormatter, fileFormatter)
+	logging.SetBackend(consoleBackend, fileBackend)
 	return close, nil
 }
 
 func (l *log) prodLog() (close func() error, err error) {
-	writer, close, err := l.writerToWithRotation()
+	fileBackend, close, err := l.fileBackend()
 	if err != nil {
 		return nil, err
 	}
 
-	fileFormatter := logging.NewBackendFormatter(writer, formatFile)
-	logging.SetBackend(fileFormatter)
+	logging.SetBackend(fileBackend)
 	return close, nil
+}
+
+func (l *log) fileBackend() (fileFormatter logging.Backend, close func() error, err error) {
+	writer, close, err := l.writerToWithRotation()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	fileFromatter := logging.NewBackendFormatter(writer, formatFile)
+	fileBackend := logging.AddModuleLevel(fileFromatter)
+	fileBackend.SetLevel(l.level, l.module)
+
+	return fileBackend, close, nil
 }
 
 func (l *log) writerToWithRotation() (writer *logging.LogBackend, close func() error, err error) {
